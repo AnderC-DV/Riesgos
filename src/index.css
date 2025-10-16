@@ -27,3 +27,12 @@
 		animation-delay: 4s;
 	}
 }
+/* Prevenir scroll a nivel de body/html para evitar deformaciones del header */
+html,
+body {
+  overflow: hidden;       /* Deshabilita scroll del body */
+  margin: 0;              /* Reset de márgenes */
+  padding: 0;             /* Reset de padding */
+  height: 100%;           /* Ocupa toda la altura */
+  width: 100%;            /* Ocupa todo el ancho */
+}
