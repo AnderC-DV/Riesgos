@@ -6,6 +6,13 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+    proxy: {
+      '/api': {
+        target: 'https://back-riesgos-475190189080.us-central1.run.app',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
   build: {
     target: 'ES2020',

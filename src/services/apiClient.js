@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-// Vite expone variables a través de import.meta.env; se usa fallback local para desarrollo.
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+// Vite expone variables a través de import.meta.env; se usa fallback a la URL del backend desplegado.
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://back-riesgos-475190189080.us-central1.run.app'
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
