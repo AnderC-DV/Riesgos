@@ -1,5 +1,12 @@
-import { Plus, Search, AlertTriangle, ChevronRight } from 'lucide-react'
+import {
+  Plus,
+  Search,
+  AlertTriangle,
+  ChevronRight,
+  CheckCircle,
+} from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import RiskWizardModal from '../components/RiskWizardModal'
 import { useRiskStore } from '../store/riskStore'
 import { useAuthStore } from '../store/authStore'
 
@@ -74,18 +81,38 @@ export default function RiskAnalysis() {
   const { isAuthenticated } = useAuthStore((state) => ({
     isAuthenticated: state.isAuthenticated,
   }))
-  const { risks, loading, error, fetchRisks } = useRiskStore((state) => ({
+  const { risks, loading, error, fetchRisks, creating, createRisk } = useRiskStore((state) => ({
     risks: state.risks,
     loading: state.loading,
     error: state.error,
     fetchRisks: state.fetchRisks,
+    creating: state.creating,
+    createRisk: state.createRisk,
   }))
+  const [isWizardOpen, setIsWizardOpen] = useState(false)
+  const [toastInfo, setToastInfo] = useState(null)
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchRisks()
     }
   }, [isAuthenticated, fetchRisks])
+
+  const handleRiskSubmit = async (payload) => {
+    const created = await createRisk(payload)
+    const hasControls = payload.controls?.length > 0
+    setIsWizardOpen(false)
+    setToastInfo({
+      message: `Riesgo guardado correctamente ${hasControls ? 'con controles' : 'sin controles'}.`,
+      type: hasControls ? 'success' : 'info',
+    })
+    return created
+  }
+
+  const handleToastClose = () => {
+    setToastInfo(null)
+    fetchRisks()
+  }
 
   const filteredRisks = useMemo(() => {
     const query = searchTerm.trim().toLowerCase()
@@ -114,7 +141,8 @@ export default function RiskAnalysis() {
   const displayRisks = filteredRisks
 
   return (
-    <div className="space-y-8">
+    <>
+      <div className="space-y-8">
       {/* Header */}
       <div className="space-y-2">
         <div>
@@ -157,7 +185,11 @@ export default function RiskAnalysis() {
           </select>
         </div>
 
-        <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all shadow-lg hover:shadow-xl flex items-center gap-2 whitespace-nowrap">
+        <button
+          type="button"
+          onClick={() => setIsWizardOpen(true)}
+          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all shadow-lg hover:shadow-xl flex items-center gap-2 whitespace-nowrap"
+        >
           <Plus size={20} />
           Nuevo Riesgo
         </button>
@@ -247,5 +279,28 @@ export default function RiskAnalysis() {
         })}
       </div>
     </div>
+    <RiskWizardModal
+        isOpen={isWizardOpen}
+        onClose={() => setIsWizardOpen(false)}
+        onSubmit={handleRiskSubmit}
+        isSubmitting={creating}
+      />
+      {toastInfo && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-2xl">
+          <CheckCircle className="w-6 h-6 text-emerald-500" />
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-gray-900">{toastInfo.message}</p>
+            <p className="text-xs text-gray-500">Cierra para recargar la lista.</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleToastClose}
+            className="text-blue-600 text-xs font-semibold uppercase tracking-wide"
+          >
+            Cerrar
+          </button>
+        </div>
+      )}
+    </>
   )
 }

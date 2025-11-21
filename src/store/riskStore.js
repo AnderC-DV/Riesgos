@@ -5,6 +5,8 @@ export const useRiskStore = create((set, get) => ({
   risks: [],
   loading: false,
   error: null,
+  creating: false,
+  createError: null,
   setRisks: (risks) => set({ risks }),
   setError: (error) => set({ error }),
   addRisk: (risk) => set((state) => ({ risks: [...state.risks, risk] })),
@@ -32,6 +34,21 @@ export const useRiskStore = create((set, get) => ({
       set({ error: error.message || 'No se pudieron cargar los riesgos.' })
     } finally {
       set({ loading: false })
+    }
+  },
+  createRisk: async (payload) => {
+    if (!payload) throw new Error('Los datos del riesgo no pueden estar vacíos.')
+    set({ creating: true, createError: null })
+    try {
+      const createdRisk = await riskService.createRisk(payload)
+      set((state) => ({ risks: [createdRisk, ...state.risks] }))
+      return createdRisk
+    } catch (error) {
+      const message = error?.message || 'No se pudo crear el riesgo.'
+      set({ createError: message })
+      throw new Error(message)
+    } finally {
+      set({ creating: false })
     }
   },
 }))
